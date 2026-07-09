@@ -52,8 +52,14 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "red", "value": 80}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
             ]
           },
           "unit": "s"
@@ -69,7 +75,9 @@
       "id": 1,
       "options": {
         "legend": {
-          "calcs": ["p95"],
+          "calcs": [
+            "p95"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -115,9 +123,18 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 10},
-              {"color": "red", "value": 50}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
             ]
           },
           "unit": "reqps"
@@ -137,7 +154,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -151,11 +170,12 @@
           "datasource": {
             "type": "prometheus"
           },
-          "expr": "rate(cortex_chat_requests_total[1m])",
-          "refId": "A"
+          "expr": "rate(cortex_uploads_total[1m])",
+          "refId": "A",
+          "legendFormat": ""
         }
       ],
-      "title": "Consultas por Minuto",
+      "title": "Uploads por Minuto",
       "type": "stat"
     },
     {
@@ -172,9 +192,18 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "orange", "value": 100000},
-              {"color": "red", "value": 500000}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 100000
+              },
+              {
+                "color": "red",
+                "value": 500000
+              }
             ]
           },
           "unit": "short"
@@ -194,7 +223,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -226,13 +257,31 @@
             "mode": "thresholds"
           },
           "mappings": [
-            {"options": {"0": {"color": "red", "text": "DOWN"}, "1": {"color": "green", "text": "UP"}}, "type": "value"}
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
           ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "red", "value": null},
-              {"color": "green", "value": 1}
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
             ]
           }
         },
@@ -251,7 +300,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -265,28 +316,28 @@
           "datasource": {
             "type": "prometheus"
           },
-          "expr": "cortex_agent_status{agent=\"retriever\"}",
-          "legendFormat": "Retriever",
+          "expr": "up{job=\"cortex-api\"}",
+          "legendFormat": "",
           "refId": "A"
         },
         {
           "datasource": {
             "type": "prometheus"
           },
-          "expr": "cortex_agent_status{agent=\"validator\"}",
-          "legendFormat": "Validator",
+          "expr": "up{job=\"cortex-api\"}",
+          "legendFormat": "",
           "refId": "B"
         },
         {
           "datasource": {
             "type": "prometheus"
           },
-          "expr": "cortex_agent_status{agent=\"orchestrator\"}",
-          "legendFormat": "Orchestrator",
+          "expr": "up{job=\"prometheus\"}",
+          "legendFormat": "",
           "refId": "C"
         }
       ],
-      "title": "Status dos Agentes",
+      "title": "Status dos Serviços",
       "type": "stat"
     },
     {
@@ -303,7 +354,10 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null}
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           },
           "unit": "short"
@@ -323,7 +377,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -388,7 +444,10 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null}
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           },
           "unit": "short"
@@ -420,26 +479,30 @@
           "datasource": {
             "type": "prometheus"
           },
-          "expr": "rate(cortex_chat_requests_total{status=\"success\"}[5m])",
-          "legendFormat": "Sucesso",
+          "expr": "rate(cortex_tokens_used_total[5m])",
+          "legendFormat": "",
           "refId": "A"
         },
         {
           "datasource": {
             "type": "prometheus"
           },
-          "expr": "rate(cortex_chat_requests_total{status=\"error\"}[5m])",
-          "legendFormat": "Erro",
+          "expr": "rate(cortex_uploads_total[5m])",
+          "legendFormat": "",
           "refId": "B"
         }
       ],
-      "title": "Requisições (Sucesso vs Erro)",
+      "title": "Atividade (Tokens vs Uploads)",
       "type": "timeseries"
     }
   ],
   "refresh": "10s",
   "schemaVersion": 39,
-  "tags": ["cortex", "rag", "observability"],
+  "tags": [
+    "cortex",
+    "rag",
+    "observability"
+  ],
   "templating": {
     "list": []
   },
