@@ -6,7 +6,7 @@ import tarfile
 import io
 import sys
 
-HOST = "31.97.242.246"
+HOST = "alancosta.dev"
 USER = "root"
 PASSWORD=os.environ.get("VPS_PASS", "")
 PROJECT_DIR = "/opt/data/cortex"
