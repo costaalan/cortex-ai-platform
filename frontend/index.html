@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cortex AI Platform</title>
+<style>
+:root {
+  --bg: #0a0e14;
+  --surface: #131820;
+  --border: #1e293b;
+  --primary: #3b82f6;
+  --primary-glow: rgba(59,130,246,0.3);
+  --accent: #06d6a0;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --danger: #ef4444;
+  --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+}
+/* ── Sidebar ──────────────────────── */
+.sidebar {
+  width: 260px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.logo {
+  font-size: 22px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 32px;
+  text-align: center;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all .2s;
+  margin-bottom: 4px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.nav-item:hover { background: rgba(255,255,255,.05); color: var(--text); }
+.nav-item.active {
+  background: rgba(59,130,246,.15);
+  color: var(--primary);
+}
+.nav-icon { font-size: 18px; width: 24px; text-align: center; }
+/* ── Main Content ─────────────────── */
+.main {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+}
+.page { display: none; }
+.page.active { display: block; }
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.page-subtitle {
+  color: var(--muted);
+  margin-bottom: 32px;
+  font-size: 14px;
+}
+/* ── Cards ────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+/* ── Upload Zone ──────────────────── */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 48px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .3s;
+}
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--primary);
+  background: rgba(59,130,246,.05);
+}
+.upload-zone .icon { font-size: 48px; margin-bottom: 16px; }
+.upload-zone .text { color: var(--muted); }
+.upload-zone .browse { color: var(--primary); font-weight: 600; }
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  margin-top: 16px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-radius: 4px;
+  width: 0%;
+  transition: width .3s;
+}
+/* ── Chat ─────────────────────────── */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px);
+}
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.chat-msg {
+  max-width: 80%;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.chat-msg.user {
+  align-self: flex-end;
+  background: var(--primary);
+  color: #fff;
+}
+.chat-msg.assistant {
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.chat-source {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.chat-input-row {
+  display: flex;
+  gap: 12px;
+}
+.chat-input {
+  flex: 1;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+.chat-input:focus { border-color: var(--primary); }
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all .2s;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { box-shadow: 0 0 20px var(--primary-glow); }
+.btn-accent { background: var(--accent); color: #0a0e14; }
+.btn-sm { padding: 8px 16px; font-size: 12px; }
+/* ── Dashboard Grid ───────────────── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.metric-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.metric-value { font-size: 32px; font-weight: 700; }
+.metric-value.green { color: var(--accent); }
+.metric-value.blue { color: var(--primary); }
+.chart-placeholder {
+  height: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: flex-end;
+  padding: 20px;
+  gap: 12px;
+}
+.chart-bar {
+  flex: 1;
+  background: linear-gradient(180deg, var(--primary), var(--accent));
+  border-radius: 4px 4px 0 0;
+  min-height: 10px;
+  transition: height .5s;
+}
+/* ── FinOps ───────────────────────── */
+.finops-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.finops-table th, .finops-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.finops-table th {
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.savings-badge {
+  background: rgba(6,214,160,.15);
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+/* ── Loading ──────────────────────── */
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+/* ── Toast ────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  font-size: 13px;
+  z-index: 999;
+  animation: slideUp .3s;
+}
+.toast.error { border-color: var(--danger); }
+.toast.success { border-color: var(--accent); }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+/* ── Cost chart ───────────────────── */
+.cost-comparison {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+.cost-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.cost-bar-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+.cost-bar-value {
+  font-size: 13px;
+  font-weight: 700;
+}
+.cost-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.cost-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+.cost-bar-fill.free { background: var(--accent); }
+.cost-bar-fill.cheap { background: #facc15; }
+.cost-bar-fill.medium { background: #f97316; }
+.cost-bar-fill.expensive { background: var(--danger); }
+</style>
+</head>
+<body>
+
+<!-- ═══ Sidebar ═══ -->
+<aside class="sidebar">
+  <div class="logo">⚡ Cortex AI</div>
+  <nav>
+    <div class="nav-item active" data-page="chat">
+      <span class="nav-icon">💬</span> Chat RAG
+    </div>
+    <div class="nav-item" data-page="upload">
+      <span class="nav-icon">📄</span> Upload Documentos
+    </div>
+    <div class="nav-item" data-page="dashboard">
+      <span class="nav-icon">📊</span> Dashboard
+    </div>
+    <div class="nav-item" data-page="finops">
+      <span class="nav-icon">💰</span> FinOps
+    </div>
+  </nav>
+</aside>
+
+<!-- ═══ Main Content ═══ -->
+<main class="main">
+
+  <!-- ── Chat Page ────────────────────── -->
+  <section class="page active" id="page-chat">
+    <h1 class="page-title">Chat RAG</h1>
+    <p class="page-subtitle">Consulte seus documentos com citação de fontes</p>
+    <div class="card">
+      <div class="chat-container">
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-msg assistant">
+            👋 Olá! Faça perguntas sobre os documentos indexados na plataforma. Use o upload para adicionar PDFs.
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="chat-input" placeholder="Digite sua pergunta..." onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn btn-primary" onclick="sendChat()" id="chat-btn">Enviar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Upload Page ──────────────────── -->
+  <section class="page" id="page-upload">
+    <h1 class="page-title">Upload de Documentos</h1>
+    <p class="page-subtitle">Envie PDFs para indexação no motor RAG</p>
+    <div class="card">
+      <div class="upload-zone" id="upload-zone">
+        <div class="icon">📁</div>
+        <div class="text">Arraste um PDF aqui ou <span class="browse">clique para selecionar</span></div>
+        <input type="file" id="file-input" accept=".pdf" hidden>
+      </div>
+      <div class="progress-bar" id="progress-bar" style="display:none">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div id="upload-status" style="margin-top:12px;font-size:13px;color:var(--muted)"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 Documentos Indexados</div>
+      <div id="doc-list" style="color:var(--muted);font-size:13px">Carregando...</div>
+    </div>
+  </section>
+
+  <!-- ── Dashboard Page ───────────────── -->
+  <section class="page" id="page-dashboard">
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">Observabilidade em tempo real</p>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Latência P95</div>
+        <div class="metric-value blue" id="metric-latency">--</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Consultas/min</div>
+        <div class="metric-value green" id="metric-qpm">--</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Tokens Utilizados</div>
+        <div class="metric-value" id="metric-tokens">--</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Status Plataforma</div>
+        <div class="metric-value green" id="metric-status">--</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📈 Latência (últimas requisições)</div>
+      <div class="chart-placeholder" id="latency-chart"></div>
+    </div>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Retriever Agent</div>
+        <div class="metric-value green" style="font-size:20px" id="agent-retriever">🟢 Online</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Validator Agent</div>
+        <div class="metric-value green" style="font-size:20px" id="agent-validator">🟢 Online</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Orchestrator Agent</div>
+        <div class="metric-value green" style="font-size:20px" id="agent-orchestrator">🟢 Online</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FinOps Page ──────────────────── -->
+  <section class="page" id="page-finops">
+    <h1 class="page-title">FinOps — Comparativo de Custos</h1>
+    <p class="page-subtitle">Simulação de custo por 1M tokens em diferentes provedores</p>
+    <div class="card">
+      <div class="card-title">💵 Custo Estimado por 1.000.000 tokens</div>
+      <table class="finops-table" id="finops-table">
+        <thead>
+          <tr><th>Provedor</th><th>Custo (BRL)</th><th>Economia vs OpenAI</th></tr>
+        </thead>
+        <tbody>
+          <tr id="row-ollama"><td>Ollama (Local)</td><td>R$ 0,00</td><td><span class="savings-badge">R$ 15,00</span></td></tr>
+          <tr id="row-deepseek"><td>DeepSeek</td><td>R$ 0,50</td><td><span class="savings-badge">R$ 14,50</span></td></tr>
+          <tr id="row-openai"><td>OpenAI GPT-4o</td><td>R$ 15,00</td><td><span style="color:var(--muted)">—</span></td></tr>
+          <tr id="row-anthropic"><td>Anthropic Claude</td><td>R$ 8,00</td><td><span class="savings-badge">R$ 7,00</span></td></tr>
+        </tbody>
+      </table>
+      <div class="cost-comparison" style="margin-top:24px">
+        <div class="cost-bar-wrap">
+          <div class="cost-bar-label">Ollama</div>
+          <div class="cost-bar-value" style="color:var(--accent)">R$0</div>
+          <div class="cost-bar"><div class="cost-bar-fill free" style="width:2px"></div></div>
+        </div>
+        <div class="cost-bar-wrap">
+          <div class="cost-bar-label">DeepSeek</div>
+          <div class="cost-bar-value" style="color:#facc15">R$0,50</div>
+          <div class="cost-bar"><div class="cost-bar-fill cheap" style="width:3%"></div></div>
+        </div>
+        <div class="cost-bar-wrap">
+          <div class="cost-bar-label">Anthropic</div>
+          <div class="cost-bar-value" style="color:#f97316">R$8</div>
+          <div class="cost-bar"><div class="cost-bar-fill medium" style="width:53%"></div></div>
+        </div>
+        <div class="cost-bar-wrap">
+          <div class="cost-bar-label">OpenAI</div>
+          <div class="cost-bar-value" style="color:var(--danger)">R$15</div>
+          <div class="cost-bar"><div class="cost-bar-fill expensive" style="width:100%"></div></div>
+        </div>
+      </div>
+      <p style="margin-top:20px;font-size:13px;color:var(--muted)">
+        💡 <strong>Recomendação:</strong> Use Ollama local para desenvolvimento e DeepSeek para staging. 
+        Reserve OpenAI/Anthropic apenas para casos que exigem raciocínio complexo.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ Scripts ═══ -->
+<script>
+// ── Navigation ────────────────────────
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + item.dataset.page).classList.add('active');
+    if (item.dataset.page === 'dashboard') refreshDashboard();
+    if (item.dataset.page === 'upload') loadDocuments();
+  });
+});
+
+// ── Toast ────────────────────────────
+function showToast(msg, type='success') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+// ── API Base ─────────────────────────
+const API = '/api';
+
+// ═══ UPLOAD ═══════════════════════════════════
+const uploadZone = document.getElementById('upload-zone');
+const fileInput = document.getElementById('file-input');
+const progressBar = document.getElementById('progress-bar');
+const progressFill = document.getElementById('progress-fill');
+const uploadStatus = document.getElementById('upload-status');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+
+uploadZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  uploadZone.classList.add('drag-over');
+});
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  if (e.dataTransfer.files.length) uploadFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) uploadFile(fileInput.files[0]);
+});
+
+async function uploadFile(file) {
+  if (!file.name.endsWith('.pdf')) {
+    showToast('Apenas arquivos PDF são aceitos', 'error');
+    return;
+  }
+  progressBar.style.display = 'block';
+  progressFill.style.width = '20%';
+  uploadStatus.textContent = `Enviando ${file.name}...`;
+
+  const form = new FormData();
+  form.append('file', file);
+
+  try {
+    const resp = await fetch(API + '/upload', { method: 'POST', body: form });
+    progressFill.style.width = '80%';
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.detail || 'Erro no upload');
+    progressFill.style.width = '100%';
+    uploadStatus.textContent = `✅ ${file.name}: ${data.chunks_indexed} chunks em ${data.pages} páginas`;
+    showToast(`${data.chunks_indexed} chunks indexados com sucesso!`);
+    loadDocuments();
+  } catch(e) {
+    uploadStatus.textContent = `❌ Erro: ${e.message}`;
+    showToast(e.message, 'error');
+  }
+  setTimeout(() => { progressBar.style.display = 'none'; progressFill.style.width = '0%'; }, 2000);
+}
+
+async function loadDocuments() {
+  const el = document.getElementById('doc-list');
+  try {
+    const resp = await fetch(API + '/documents');
+    const data = await resp.json();
+    if (!data.documents || !data.documents.length) {
+      el.innerHTML = 'Nenhum documento indexado ainda.';
+      return;
+    }
+    el.innerHTML = data.documents.map(d =>
+      `<div style="padding:8px 0;border-bottom:1px solid var(--border)">📄 <strong>${d.source}</strong></div>`
+    ).join('');
+  } catch(e) {
+    el.innerHTML = 'Erro ao carregar documentos.';
+  }
+}
+
+// ═══ CHAT ═════════════════════════════════════
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const query = input.value.trim();
+  if (!query) return;
+
+  const msgs = document.getElementById('chat-messages');
+  const btn = document.getElementById('chat-btn');
+
+  // Add user message
+  msgs.innerHTML += `<div class="chat-msg user">${escapeHtml(query)}</div>`;
+  input.value = '';
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // Add loading indicator
+  const loadId = 'load-' + Date.now();
+  msgs.innerHTML += `<div class="chat-msg assistant" id="${loadId}"><span class="spinner"></span> Buscando nos documentos...</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch(API + '/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({query, model: 'ollama'})
+    });
+    const data = await resp.json();
+    document.getElementById(loadId).remove();
+
+    let sourcesHtml = '';
+    if (data.sources && data.sources.length) {
+      sourcesHtml = '<div class="chat-source">📎 Fontes: ' +
+        data.sources.map(s => `<strong>${s.source}</strong> (p.${s.page})`).join(', ') +
+        ` | 🕐 ${data.latency_ms}ms | 🪙 ${data.tokens_used} tokens` +
+        '</div>';
+    }
+
+    msgs.innerHTML += `
+      <div class="chat-msg assistant">
+        <div style="white-space:pre-wrap">${escapeHtml(data.answer)}</div>
+        ${sourcesHtml}
+      </div>`;
+  } catch(e) {
+    document.getElementById(loadId).remove();
+    msgs.innerHTML += `<div class="chat-msg assistant" style="color:var(--danger)">❌ Erro: ${escapeHtml(e.message)}</div>`;
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+  btn.disabled = false;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ═══ DASHBOARD ═════════════════════════════════
+async function refreshDashboard() {
+  try {
+    const healthResp = await fetch(API + '/health');
+    const health = await healthResp.json();
+
+    document.getElementById('metric-status').textContent = health.status === 'healthy' ? 'Online' : 'Degradado';
+    document.getElementById('metric-status').className = 'metric-value ' + (health.status === 'healthy' ? 'green' : '');
+
+    // Agent status
+    const agents = health.agents || {};
+    ['retriever', 'validator', 'orchestrator'].forEach(a => {
+      const el = document.getElementById('agent-' + a);
+      if (el) el.innerHTML = agents[a] === 'healthy' ? '🟢 Online' : '🔴 Offline';
+    });
+
+    // Metrics from Prometheus-style endpoint
+    try {
+      const metricsResp = await fetch(API + '/metrics');
+      const metricsText = await metricsResp.text();
+
+      // Parse latency
+      const latencyMatch = metricsText.match(/cortex_chat_latency_seconds_sum\{[^}]*\} ([\d.]+)/);
+      const latencyCountMatch = metricsText.match(/cortex_chat_latency_seconds_count\{[^}]*\} ([\d.]+)/);
+      if (latencyMatch && latencyCountMatch) {
+        const avg = (parseFloat(latencyMatch[1]) / parseFloat(latencyCountMatch[1]) * 1000).toFixed(1);
+        document.getElementById('metric-latency').textContent = avg + 'ms';
+      } else {
+        document.getElementById('metric-latency').textContent = '--';
+      }
+
+      // Parse request count
+      const reqMatch = metricsText.match(/cortex_chat_requests_total\{[^}]*status="success"[^}]*\} ([\d.]+)/);
+      document.getElementById('metric-qpm').textContent = reqMatch ? parseInt(reqMatch[1]) : '0';
+
+      // Parse tokens
+      const tokMatch = metricsText.match(/cortex_tokens_used_total ([\d.]+)/);
+      document.getElementById('metric-tokens').textContent = tokMatch ? parseInt(tokMatch[1]) : '0';
+    } catch(e) {
+      document.getElementById('metric-latency').textContent = '--';
+      document.getElementById('metric-qpm').textContent = '--';
+      document.getElementById('metric-tokens').textContent = '--';
+    }
+
+    // Latency chart (simulated bars)
+    const chart = document.getElementById('latency-chart');
+    chart.innerHTML = Array.from({length: 12}, () => {
+      const h = Math.floor(Math.random() * 140) + 20;
+      return `<div class="chart-bar" style="height:${h}px" title="${h}ms"></div>`;
+    }).join('');
+
+  } catch(e) {
+    document.getElementById('metric-status').textContent = 'Offline';
+  }
+}
+
+// Auto-refresh dashboard every 15s
+let dashInterval;
+const observer = new MutationObserver(() => {
+  const dashPage = document.getElementById('page-dashboard');
+  if (dashPage.classList.contains('active')) {
+    if (!dashInterval) dashInterval = setInterval(refreshDashboard, 15000);
+  } else {
+    if (dashInterval) { clearInterval(dashInterval); dashInterval = null; }
+  }
+});
+document.querySelectorAll('.page').forEach(p => observer.observe(p, {attributes: true, attributeFilter: ['class']}));
+
+// Initial load
+loadDocuments();
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.env
+*.db
+uploads/
+chroma_data/
+prometheus_data/
+grafana_data/
+.venv/
+*.egg-info/
+dist/
