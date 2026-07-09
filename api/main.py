@@ -39,25 +39,34 @@ security = HTTPBearer(auto_error=False)
 CHAT_REQUESTS = Counter(
     "cortex_chat_requests_total",
     "Total chat requests",
-    ["status"],
+    ["status", "provider", "model"],
 )
 CHAT_LATENCY = Histogram(
     "cortex_chat_latency_seconds",
     "Chat latency in seconds",
+    ["provider", "model"],
     buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 30.0],
 )
 TOKENS_USED = Counter(
     "cortex_tokens_used_total",
     "Total tokens used",
+    ["provider", "model"],
 )
 UPLOAD_COUNT = Counter(
     "cortex_uploads_total",
     "Total document uploads",
+    ["project"],
 )
 AGENT_STATUS = Gauge(
     "cortex_agent_status",
     "Agent health (1=healthy)",
     ["agent"],
+)
+# FinOps — custo estimado em centavos de Real (R$)
+COST_ESTIMATED = Counter(
+    "cortex_cost_estimated_centavos",
+    "Custo estimado em centavos (dividir por 100 para R$)",
+    ["provider", "model"],
 )
 
 # ── Config ───────────────────────────────────────────
@@ -67,6 +76,18 @@ JWT_SECRET = os.getenv("JWT_SECRET", "cortex-secret-key-change-in-production")
 JWT_ALGORITHM = "HS256"
 UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "/app/uploads"))
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+# Inicializar métricas para que apareçam no /metrics (Prometheus só expõe métricas já usadas)
+for agent in ["retriever", "validator", "orchestrator"]:
+    AGENT_STATUS.labels(agent=agent).set(1)
+for provider in ["anthropic", "openai"]:
+    for model in ["claude-sonnet-4", "gpt-4o"]:
+        CHAT_REQUESTS.labels(status="success", provider=provider, model=model).inc(0)
+        CHAT_REQUESTS.labels(status="error", provider=provider, model=model).inc(0)
+        TOKENS_USED.labels(provider=provider, model=model).inc(0)
+        COST_ESTIMATED.labels(provider=provider, model=model).inc(0)
+for project in ["cortex-api", "sprint-health", "skill-graph", "hr-onboarding"]:
+    UPLOAD_COUNT.labels(project=project).inc(0)
 
 # ── Models ───────────────────────────────────────────
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
