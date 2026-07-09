@@ -77,17 +77,17 @@ JWT_ALGORITHM = "HS256"
 UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "/app/uploads"))
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-# Inicializar métricas para que apareçam no /metrics (Prometheus só expõe métricas já usadas)
+# Inicializar métricas — registra labels (Counter começa em 1, Gauge setado em 1)
 for agent in ["retriever", "validator", "orchestrator"]:
     AGENT_STATUS.labels(agent=agent).set(1)
 for provider in ["anthropic", "openai"]:
     for model in ["claude-sonnet-4", "gpt-4o"]:
-        CHAT_REQUESTS.labels(status="success", provider=provider, model=model).inc(0)
-        CHAT_REQUESTS.labels(status="error", provider=provider, model=model).inc(0)
-        TOKENS_USED.labels(provider=provider, model=model).inc(0)
-        COST_ESTIMATED.labels(provider=provider, model=model).inc(0)
+        CHAT_REQUESTS.labels(status="success", provider=provider, model=model).inc()
+        CHAT_REQUESTS.labels(status="error", provider=provider, model=model).inc()
+        TOKENS_USED.labels(provider=provider, model=model).inc()
+        COST_ESTIMATED.labels(provider=provider, model=model).inc()
 for project in ["cortex-api", "sprint-health", "skill-graph", "hr-onboarding"]:
-    UPLOAD_COUNT.labels(project=project).inc(0)
+    UPLOAD_COUNT.labels(project=project).inc()
 
 # ── Models ───────────────────────────────────────────
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
